@@ -16,38 +16,37 @@ struct Todo: Identifiable {
 struct ContentView: View {
     // Todos State
     @State var todos: [Todo] = []
+    @State var pickedColor: Color = .red
+    @State var title: String = "Reminders"
+    @State var isShowingSheet: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
-            // Title
-            Text("Reminders")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundStyle(.blue)
-                .padding(.bottom, 15)
+            HStack {
+                // Title
+                Text(title)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(pickedColor)
+                    .padding(.bottom, 15)
+                
+                Spacer()
+                
+                // Settings Button
+                Button {
+                    isShowingSheet.toggle()
+                } label: {
+                    // Settings button
+                    Image(systemName: "filemenu.and.cursorarrow")
+                        .font(.title)
+                        .foregroundStyle(pickedColor)
+                }
+            }
             
             // List that displays each To-Do
             List {
                 ForEach($todos) { $todo in
-                    
-                    // HStack that contains the icon and text field for the
-                    // to-do
-                    HStack {
-                        Button {
-                            todo.isDone.toggle()
-                        } label: {
-                            Circle()
-                                .stroke(.blue, lineWidth: 2)
-                                .fill(todo.isDone ? .blue : .blue.opacity(0))
-                                .frame(width: 25, height: 25)
-                        }
-                        
-                        TextField("", text: $todo.item)
-                            .font(.title3)
-                            .foregroundStyle(todo.isDone ? .gray : .primary)
-                            .strikethrough(todo.isDone, color: .gray)
-                    }
-                    
+                    TodoRowView(todo: $todo, pickedColor: $pickedColor)
                 }
                 .onDelete(perform: removeRows)
             }
@@ -63,9 +62,13 @@ struct ContentView: View {
                 }
                 .font(.title3)
                 .fontWeight(.bold)
+                .foregroundStyle(pickedColor)
             }
         }
         .padding()
+        .sheet(isPresented: $isShowingSheet) {
+            SettingsView(pickedColor: $pickedColor, title: $title)
+        }
     }
     
     func removeRows(at offsets: IndexSet) {
